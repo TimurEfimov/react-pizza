@@ -1,21 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setSort } from "../redux/slices/filterSlice";
 
-export default function Sort({ value, onClickSort }) {
+export default function Sort() {
+  const dispatch = useDispatch();
+  const sort = useSelector((state) => state.filter.sort);
+  const sortRef = useRef();
+
   const [isVisible, setIsVisible] = useState(false);
 
   const list = [
-    { name: "популярности", sort: "rating" },
-    { name: "цене", sort: "price" },
-    { name: "алфавиту", sort: "title" },
+    { name: "популярности", sortProperty: "-rating" },
+    { name: "цене", sortProperty: "price" },
+    { name: "алфавиту", sortProperty: "title" },
   ];
 
   function renderSort(obj) {
-    onClickSort(obj);
+    dispatch(setSort(obj));
     setIsVisible(false);
   }
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.composedPath().includes(sortRef.current)) {
+        setIsVisible(false);
+      }
+    };
+
+    document.body.addEventListener("click", handleClickOutside);
+
+    return () => document.body.removeEventListener("click", handleClickOutside);
+  }, []);
+
   return (
-    <div className="sort" onClick={() => setIsVisible(!isVisible)}>
+    <div
+      ref={sortRef}
+      className="sort"
+      onClick={() => setIsVisible(!isVisible)}
+    >
       <div className="sort__label">
         <svg
           width="10"
@@ -30,14 +52,16 @@ export default function Sort({ value, onClickSort }) {
           />
         </svg>
         <b>Сортировка по:</b>
-        <span>{value.name}</span>
+        <span>{sort.name}</span>
       </div>
       {isVisible && (
         <div className="sort__popup">
           <ul>
             {list.map((obj, i) => (
               <li
-                className={value.sort == obj.sort ? "active" : ""}
+                className={
+                  sort.sortProperty == obj.sortProperty ? "active" : ""
+                }
                 onClick={() => renderSort(obj)}
                 key={i}
               >

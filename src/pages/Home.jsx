@@ -1,59 +1,90 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState, useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
+import { fetchPizzas } from "../redux/slices/pizzasSlice";
+import { setCategoryId, setCurrentPage } from "../redux/slices/filterSlice";
 import Categories from "../components/Categories";
 import PizzaBlock from "../components/PizzaBlock";
 import Skeleton from "../components/PizzaBlock/Skeleton";
 import Sort from "../components/Sort";
 import Pagination from "../components/Pagination";
+import { SearchContext } from "../App";
 
-export default function Home({ searchValue }) {
-  const [items, setItems] = useState([]);
-  const [pages, setPages] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [categoryId, setCategoryId] = useState(0);
-  const [sortName, setSortName] = useState({
-    name: "популярности",
-    sort: "rating",
-  });
+export default function Home() {
+  const dispatch = useDispatch();
 
-  const category = categoryId > 0 ? `&category=${categoryId}` : "";
-  const search = searchValue ? `&title=*${searchValue}*` : "";
+  const { items, pages, status } = useSelector((state) => state.pizza);
+  const { categoryId, sort, currentPage } = useSelector(
+    (state) => state.filter
+  );
+
+  const sortType = sort.sortProperty;
+
+  const { searchValue } = useContext(SearchContext);
+
+  function onClickCategory(id) {
+    dispatch(setCategoryId(id));
+  }
+
+  function onChangePage(num) {
+    dispatch(setCurrentPage(num));
+  }
+
+  const getPizzas = async () => {
+    const category = categoryId > 0 ? `&category=${categoryId}` : "";
+    const search = searchValue ? `&title=*${searchValue}*` : "";
+    const sortBy = `&sortBy=${sortType}`;
+
+    try {
+      dispatch(
+        fetchPizzas({
+          category,
+          search,
+          sortBy,
+          currentPage,
+        })
+      );
+    } catch (error) {
+      alert("Ошибка при получении пицц");
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    setLoading(true);
-    const apiUrl = `https://e0f09f95f87ac222.mokky.dev/pizzas?page=${currentPage}&limit=4&${category}&sortBy=-${sortName.sort}${search}`;
-    axios.get(apiUrl).then((resp) => {
-      const allPizzas = resp.data.items;
-      setItems(allPizzas);
-      setPages(resp.data.meta);
-      setLoading(false);
-    });
-  }, [categoryId, sortName, searchValue, currentPage]);
+    getPizzas();
+  }, [categoryId, sortType, searchValue, currentPage]);
 
-  console.log(currentPage)
+  const skeletons = [...new Array(4)].map((_, index) => (
+    <Skeleton key={index} />
+  ));
+
+  const pizzas = items.map((obj) => <PizzaBlock {...obj} key={obj.id} />);
 
   return (
     <>
       <div className="container">
         <div className="content__top">
-          <Categories
-            value={categoryId}
-            onClickCategory={(i) => setCategoryId(i)}
-          />
-          <Sort value={sortName} onClickSort={(i) => setSortName(i)} />
+          <Categories value={categoryId} onClickCategory={onClickCategory} />
+          <Sort />
         </div>
         <h2 className="content__title">Все пиццы</h2>
-        <div className="content__items">
-          {loading
-            ? [...new Array(6)].map((_, index) => <Skeleton key={index} />)
-            : items.map((obj) => <PizzaBlock {...obj} key={obj.id} />)}
-        </div>
+        {status === "error" ? (
+          <div className="content__error-info">
+            <h2>Произошла ошибка 😕</h2>
+            <p>
+              К сожалению, не удалось получить пиццы. Попробуйте повторить
+              попытку позже.
+            </p>
+          </div>
+        ) : (
+          <div className="content__items">
+            {status === "loading" ? skeletons : pizzas}
+          </div>
+        )}
         <Pagination
           pages={pages.total_pages}
           per_page={pages.per_page}
-          onChangePage={(number) => setCurrentPage(number)}
+          onChangePage={onChangePage}
         />
       </div>
     </>
