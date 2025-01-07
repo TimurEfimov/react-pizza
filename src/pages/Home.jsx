@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { fetchPizzas } from "../redux/slices/pizzasSlice";

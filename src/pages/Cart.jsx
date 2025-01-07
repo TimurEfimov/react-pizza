@@ -9,9 +9,7 @@ import CartEmpty from "../components/CartEmpty";
 export default function Cart() {
   const dispatch = useDispatch();
 
-  const { items, totalPrice } = useSelector((state) => state.cart);
-
-  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
+  const { items, totalPrice, totalCount } = useSelector((state) => state.cart);
 
   function clearCart() {
     dispatch(clearProducts());
