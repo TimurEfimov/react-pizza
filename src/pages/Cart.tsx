@@ -1,22 +1,26 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-
-import { clearProducts } from "../redux/slices/cartSlice";
+// @ts-ignore
+import { clearProducts, selectCart } from "../redux/slices/cartSlice";
 import CartBlock from "../components/cartItem";
 import CartEmpty from "../components/CartEmpty";
 
-export default function Cart() {
+const Cart: React.FC = () => {
   const dispatch = useDispatch();
 
-  const { items, totalPrice, totalCount } = useSelector((state) => state.cart);
+  const { items, totalPrice, totalCount } = useSelector(selectCart);
 
   function clearCart() {
     dispatch(clearProducts());
   }
 
   if (!totalPrice) {
-    return <CartEmpty />
+    return (
+      <>
+        <CartEmpty />
+      </>
+    );
   }
 
   return (
@@ -97,7 +101,7 @@ export default function Cart() {
           </div>
         </div>
         <div className="cart__content__items">
-          {items.map((obj) => (
+          {items.map((obj: any) => (
             <CartBlock {...obj} key={obj.id} />
           ))}
         </div>
@@ -143,4 +147,6 @@ export default function Cart() {
       </div>
     </>
   );
-}
+};
+
+export default Cart;

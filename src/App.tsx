@@ -1,4 +1,3 @@
-import { createContext, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
@@ -8,14 +7,11 @@ import NotFound from "./pages/NotFound";
 import FullPizza from "./pages/fullPizza";
 import "./scss/app.scss";
 
-export const SearchContext = createContext();
 
 export default function App() {
-  const [searchValue, setSearchValue] = useState("");
 
   return (
     <div className="wrapper">
-      <SearchContext.Provider value={{ searchValue, setSearchValue }}>
         <Header />
         <div className="content">
           <Routes>
@@ -25,7 +21,6 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
-      </SearchContext.Provider>
     </div>
   );
 }

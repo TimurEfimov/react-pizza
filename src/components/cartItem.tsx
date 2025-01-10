@@ -1,9 +1,23 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 
-import { removeProduct, addProduct, minusItem } from "../redux/slices/cartSlice";
+import {
+  removeProduct,
+  addProduct,
+  minusProduct,
+} from "../redux/slices/cartSlice";
 
-export default function cartBlock({
+type CartItemProps = {
+  id: number;
+  price: number;
+  title: string;
+  imageUrl: string;
+  size: number;
+  type: string;
+  count: number;
+};
+
+const cartBlock: React.FC<CartItemProps> = ({
   id,
   price,
   title,
@@ -11,7 +25,7 @@ export default function cartBlock({
   size,
   type,
   count,
-}) {
+}) => {
   const dispatch = useDispatch();
 
   function removeItem() {
@@ -19,11 +33,11 @@ export default function cartBlock({
   }
 
   function incrementCount() {
-    dispatch(addProduct({ id }));
+    dispatch(addProduct({ id, price, title, imageUrl, size, type, count }));
   }
 
   function decrementCount() {
-    dispatch(minusItem(id));
+    dispatch(minusProduct(id));
   }
   return (
     <div className="cart__item">
@@ -109,4 +123,6 @@ export default function cartBlock({
       </div>
     </div>
   );
-}
+};
+
+export default cartBlock
